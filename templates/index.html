@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v0.3.min.js"></script>
+    <div>
+        <svg id="svg_time" width="1200" height="400"></svg>
+    </div>
+    <div>
+        <svg id="svg" width="600" height="400"></svg>
+        <svg id="svg_graph" width="600" height="400"></svg>
+    </div>
+    <div>
+        <select id="selectButton"></select>
+    </div>
+<script>
+    let graphData = {{ data.images|tojson }},
+        grid = {{ data.grid }},
+        nColumns = {{ data.nColumns }},
+        groups = {{ data.groups|tojson }},
+        n_agents = {{ data.nAgents }};
+
+    let episode = {{ data.episode|tojson }},
+        episode_per_agent = {{ data.episode_per_agent|tojson }},
+        heatmap = {{ data.heatmap|tojson }},
+        metrics = {{ data.metrics|tojson }};
+
+    let time_data = {{ data.time_data|tojson }};
+
+    let svg = d3.select("svg#svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
+
+    let g_svg = d3.select("svg#svg_graph"),
+        g_width = +g_svg.attr("width"),
+        g_height = +g_svg.attr("height");
+
+    let time_svg = d3.select("svg#svg_time"),
+        time_width = +time_svg.attr("width"),
+        time_height = +time_svg.attr("height");
+
+    let time_scale = d3.scaleLinear().domain([0, 100]).range([50, time_width  - 50]);
+    let x_axis = d3.axisBottom().scale(time_scale);
+    time_svg.append("g").attr("transform", `translate(${0}, ${time_height - 50})`).call(x_axis);
+
+    let cell_size = 20,
+        offset_x = 0,
+        offset_y = -150;
+
+    let timestep = 0;
+    let heatmap_display_type = 0;
+
+    let src_key = "src-14-5"
+    let foo = time_svg.append("g");
+    foo.selectAll("g").data(Object.keys(time_data[src_key])).enter().append("g").each(function (d) {
+        d3.select(this).selectAll("g").data(time_data[src_key][d]["agent_index"]).enter().append("g").each(function (k, i) {
+            let rect_height = 20
+            let height_factor = time_data[src_key][d]["agent_index"].length * (rect_height +10)
+            let color_ = d == 1 ? "blue" : "red"
+            d3.select(this).selectAll("rect").data(time_data[src_key][d][k]).enter().append("rect").each(function (u) {
+                d3.select(this).attrs({"x": time_scale(u[0]), "y": d * height_factor + i * (rect_height + 5), "width": time_scale(u[1]) - time_scale(u[0]), "height": rect_height, "fill": color_})
+            })
+        })
+    })
+    let bar = foo.append("g");
+    bar.append("rect").attrs({"x": time_scale(0) - 10, "y":0, "width": 2, "height": 110, "fill": "black"});
+    bar.append("text").attrs({"x": -50, "y": time_scale(0) - 20, "dy": "0.3em", "transform": `rotate(${-90})`}).style("text-anchor", "middle").text(src_key);
+
+    src_key = "src-15-16"
+    foo = time_svg.append("g").attr("transform", `translate(${0}, ${150})`);
+    foo.selectAll("g").data(Object.keys(time_data[src_key])).enter().append("g").each(function (d) {
+        d3.select(this).selectAll("g").data(time_data[src_key][d]["agent_index"]).enter().append("g").each(function (k, i) {
+            let rect_height = 20
+            let height_factor = time_data[src_key][d]["agent_index"].length * (rect_height +10)
+            let color_ = d == 1 ? "blue" : "red"
+            d3.select(this).selectAll("rect").data(time_data[src_key][d][k]).enter().append("rect").each(function (u) {
+                d3.select(this).attrs({"x": time_scale(u[0]), "y": d * height_factor + i * (rect_height + 5), "width": time_scale(u[1]) - time_scale(u[0]), "height": rect_height, "fill": color_})
+            })
+        })
+    })
+    bar = foo.append("g");
+    bar.append("rect").attrs({"x": time_scale(0) - 10, "y":0, "width": 2, "height": 50, "fill": "black"});
+    bar.append("text").attrs({"x": -20, "y": time_scale(0) - 20, "dy": "0.3em", "transform": `rotate(${-90})`}).style("text-anchor", "middle").text(src_key);
+
+    src_key = "src-16-5"
+    foo = time_svg.append("g").attr("transform", `translate(${0}, ${220})`);
+    foo.selectAll("g").data(Object.keys(time_data[src_key])).enter().append("g").each(function (d) {
+        d3.select(this).selectAll("g").data(time_data[src_key][d]["agent_index"]).enter().append("g").each(function (k, i) {
+            let rect_height = 20
+            let height_factor = time_data[src_key][d]["agent_index"].length * (rect_height +10)
+            let color_ = d == 1 ? "blue" : "red"
+            d3.select(this).selectAll("rect").data(time_data[src_key][d][k]).enter().append("rect").each(function (u) {
+                d3.select(this).attrs({"x": time_scale(u[0]), "y": d * height_factor + i * (rect_height + 5), "width": time_scale(u[1]) - time_scale(u[0]), "height": rect_height, "fill": color_})
+            })
+        })
+    })
+    bar = foo.append("g");
+    bar.append("rect").attrs({"x": time_scale(0) - 10, "y":0, "width": 2, "height": 110, "fill": "black"});
+    bar.append("text").attrs({"x": -50, "y": time_scale(0) - 20, "dy": "0.3em", "transform": `rotate(${-90})`}).style("text-anchor", "middle").text(src_key);
+
+    svg.append("g").attr("class", "grid environment").selectAll("image.cell")
+        .data(grid).enter().append("image").attr("class", "grid environment cell")
+        .each(function (cell_type, index) {
+            let cell_x = index % nColumns,
+                cell_y = Math.trunc(index / nColumns);
+            let cell = d3.select(this)
+                .attr("cell_type", cell_type)
+                .attr("cell_x", cell_x)
+                .attr("cell_y", cell_y)
+                .attr("x", cell_size*cell_x+offset_x)
+                .attr("y", cell_size*cell_y+offset_y)
+                .attr("width", cell_size)
+                .attr("height", cell_size)
+                .attr("xlink:href", graphData[cell_type]["src"])
+            if (graphData[cell_type]["rotation"] !== 0)
+                cell.attr("transform",
+                    `rotate(${graphData[cell_type]["rotation"]},
+                        ${cell_size*cell_x+cell_size/2+offset_x},
+                        ${cell_size*cell_y+cell_size/2+offset_y})`)
+        });
+
+
+    svg.append("g").attr("class", "grid overlay").selectAll("rect.cell")
+        .data(heatmap).enter().append("rect").attr("class", "grid overlay cell")
+        .each(function (cell_type, index) {
+            let cell_x = index % nColumns,
+                cell_y = Math.trunc(index / nColumns);
+            d3.select(this)
+                .attr("cell_x", cell_x)
+                .attr("cell_y", cell_y)
+                .attr("x", cell_size*cell_x+offset_x)
+                .attr("y", cell_size*cell_y+offset_y)
+                .attr("width", cell_size)
+                .attr("height", cell_size)
+                .attr("visibility", "hidden")
+        });
+
+    let agents_g = svg.append("g").attr("class", "agents");
+
+    /*d3.select("body").append("button").text("change data").on("click",function(){
+        timestep = (timestep + 1) % 30;
+        console.log(timestep);
+
+        let agents = agents_g.selectAll("rect.agent")
+            .data(episode[timestep])
+        //agents.exit().remove();
+        agents.enter().append("rect").attr("class", "grid agent cell").merge(agents)
+            .each(function (agent, index) {
+                d3.select(this)
+                    .attr("cell_x", agent.x)
+                    .attr("cell_y", agent.y)
+                    .attr("x", cell_size*agent.x+offset_x)
+                    .attr("y", cell_size*agent.y+offset_y)
+                    .attr("width", cell_size)
+                    .attr("height", cell_size)
+            });
+    });
+    */
+    d3.select("#selectButton").selectAll("myOptions").data([0, 1, 2]).enter().append("option").text(function (d) {
+        if (d === 0)
+            return "OR";
+        else if (d === 1)
+            return "RL";
+        else if (d === 2)
+            return "Show diff";
+        return "";
+    }).attr("value", d => d)
+
+    d3.select("#selectButton").on("change", function (d) {
+        heatmap_display_type = d3.select(this).property("value");
+        update_heatmap();
+    })
+
+    let src_checkboxes = {}
+
+    d3.select("body")
+        .selectAll("g.check").data(groups["src"]).enter().append("g").attr("class", "check")
+        .each(function(pos, index){
+            d3.select(this)
+                .append("label")
+                .text("" + pos[0] + "-" + pos[1])
+            d3.select(this)
+                .append("input")
+                .attrs({
+                    "type": "checkbox",
+                    "class": "check src",
+                })
+                .on("change", function () {
+                    src_checkboxes["src-" + pos[0] + "-" + pos[1]] = this.checked;
+                    update_heatmap();
+                })
+            src_checkboxes["src-" + pos[0] + "-" + pos[1]] = false
+        });
+
+    function update_heatmap() {
+        let heatmap_keys = Object.keys(src_checkboxes).filter(x => src_checkboxes[x] === true);
+        if (heatmap_keys.length > 0){
+            d3.selectAll("rect.grid.overlay.cell").each(function (cell_data, index) {
+                if (index > 0)
+                    cell_data["heatmap_value"] = heatmap_keys.reduce((sum, key) => sum + (key in cell_data[heatmap_display_type] ? cell_data[heatmap_display_type][key] : 0), 0);
+                else
+                    cell_data["heatmap_value"] = 0
+            });
+            show_heatmap();
+        }
+        else
+            hide_heatmap();
+    }
+
+    function show_heatmap() {
+        let max = heatmap.reduce((prev, current) => prev > Math.abs(current["heatmap_value"]) ? prev : Math.abs(current["heatmap_value"]), 0);
+        let heatmap_color = d3.scaleLinear().domain([0, max]).range([0.2, 0.7])
+        d3.selectAll("rect.grid.overlay.cell").each(function (cell_data, index) {
+            if (cell_data["heatmap_value"] > 0)
+                d3.select(this).attr("visibility", "visible")
+                    .attr("fill", heatmap_display_type != 1 ? "red": "blue")
+                    .attr("opacity", d => heatmap_color(Math.abs(d["heatmap_value"])));
+            else if(cell_data["heatmap_value"] < 0)
+                d3.select(this).attr("visibility", "visible")
+                    .attr("fill", "blue")
+                    .attr("opacity", d => heatmap_color(Math.abs(d["heatmap_value"])));
+            else
+                d3.select(this).attr("visibility", "hidden");
+        });
+    }
+
+    function hide_heatmap() {
+        d3.selectAll("rect.grid.overlay.cell").attr("visibility", "hidden");
+    }
+
+    /*
+    let distance_color = d3.scaleOrdinal(d3["schemeCategory10"]);
+    let svg2 = d3.select("svg#svg2")
+    for (let i = 0; i < 8; i++){
+        let tmp = transform_coordinates(distance_coordinate[i], 200, 14, 7, i);
+        svg2.append("path").attr("class", "distance_time line")
+            .attr("fill", "none")
+            .attr("stroke", distance_color(i))
+            .attr("stroke-width", 1)
+            .attr("d", d3.line()(tmp))
+    }
+
+    function transform_coordinates(coord, start_y, cell_size_x, cell_size_y, offset_x){
+        for (let i = 0; i < coord.length; i++){
+            coord[i][0] = coord[i][0] * cell_size_x + offset_x
+            coord[i][1] = start_y - coord[i][1] * cell_size_y
+        }
+        console.log(coord);
+        return coord;
+    }*/
+
+    let selectionRect = {
+        element			: null,
+        previousElement : null,
+        currentY		: 0,
+        currentX		: 0,
+        originX			: 0,
+        originY			: 0,
+        setElement: function(ele) {
+            this.previousElement = this.element;
+            this.element = ele;
+        },
+        getNewAttributes: function() {
+            var x = this.currentX<this.originX?this.currentX:this.originX;
+            var y = this.currentY<this.originY?this.currentY:this.originY;
+            var width = Math.abs(this.currentX - this.originX);
+            var height = Math.abs(this.currentY - this.originY);
+            return {
+                x       : x,
+                y       : y,
+                width  	: width,
+                height  : height
+            };
+        },
+        getCurrentAttributes: function() {
+            // use plus sign to convert string into number
+            var x = +this.element.attr("x");
+            var y = +this.element.attr("y");
+            var width = +this.element.attr("width");
+            var height = +this.element.attr("height");
+            return {
+                x1  : x,
+                y1	: y,
+                x2  : x + width,
+                y2  : y + height
+            };
+        },
+        getCurrentAttributesAsText: function() {
+            var attrs = this.getCurrentAttributes();
+            return "x1: " + attrs.x1 + " x2: " + attrs.x2 + " y1: " + attrs.y1 + " y2: " + attrs.y2;
+        },
+        init: function(newX, newY) {
+            var rectElement = svg.append("rect")
+                .attrs({
+                    rx      : 4,
+                    ry      : 4,
+                    x       : 0,
+                    y       : 0,
+                    width   : 0,
+                    height  : 0,
+                    opacity : 0.15
+                })
+                .classed("selection", true);
+            this.setElement(rectElement);
+            this.originX = newX;
+            this.originY = newY;
+            this.update(newX, newY);
+        },
+        update: function(newX, newY) {
+            this.currentX = newX;
+            this.currentY = newY;
+            this.element.attrs(this.getNewAttributes());
+        },
+        focus: function() {
+            //this.element.style("stroke", "#DE695B").style("stroke-width", "2.5");
+        },
+        remove: function() {
+            this.element.remove();
+            this.element = null;
+        },
+        removePrevious: function() {
+            if(this.previousElement) {
+                this.previousElement.remove();
+            }
+        }
+    };
+
+    function dragStart() {
+        //console.log("dragStart");
+        let p = d3.mouse(this);
+        selectionRect.init(p[0], p[1]);
+        selectionRect.removePrevious();
+    }
+
+    function dragMove() {
+        //console.log("dragMove");
+        let p = d3.mouse(this);
+        selectionRect.update(p[0], p[1]);
+    }
+
+    function dragEnd() {
+        let finalAttributes = selectionRect.getCurrentAttributes();
+        selectionRect.remove();
+
+        // console.dir(finalAttributes);
+        // TODO crop selection to rails?
+        let startColumn = Math.floor((finalAttributes.x1-offset_x) / cell_size),
+            endColumn = Math.ceil((finalAttributes.x2-offset_x) / cell_size),
+            startRow = Math.floor((finalAttributes.y1-offset_y) / cell_size),
+            endRow = Math.ceil((finalAttributes.y2-offset_y) / cell_size);
+        let agents_in_area = {
+            0: agentInArea2(episode_per_agent[0], startColumn, startRow, endColumn, endRow),
+            1: agentInArea2(episode_per_agent[1], startColumn, startRow, endColumn, endRow)};
+        const some = obj => obj.in === true;
+        if (agents_in_area[0].some(some) || agents_in_area[1].some(some)){
+            let init_x = initialPositionX((startColumn) * cell_size ),
+                init_y = initialPositionY((startRow ) * cell_size );
+            node_data.push({
+                x1: startColumn, y1: startRow, x2: endColumn, y2: endRow, agents_in_area: agents_in_area,
+                x: init_x, y: init_y, init_x: init_x, init_y: init_y})
+            update_nodes();
+            update_links();
+
+            simulation.nodes(node_data);
+            simulation.force("link").links(node_links);
+            simulation.alpha(0.1).restart();
+        }
+    }
+
+    let dragBehavior = d3.drag()
+        .on("drag", dragMove)
+        .on("start", dragStart)
+        .on("end", dragEnd);
+
+    svg.call(dragBehavior);
+
+    let defs = g_svg.append("defs")
+        .append("svg:marker")
+        .attr("id", "head")
+        .attr("viewBox", "0 0 10 10")
+        .attr("refX", "10")
+        .attr("refY", "4")
+        .attr("markerUnits", "strokeWidth")
+        .attr("markerWidth", "10")
+        .attr("markerHeight", "5")
+        .attr("orient", "auto")
+        .append("svg:path")
+        .attr("d", "M 0 0 L 10 5 L 0 10 L 0 0")
+        .attr("transform", "rotate(-5, 0,0)")
+        .attr("fill", "red");
+
+    let node_data = [],
+        node = g_svg.selectAll("circle.node"),
+        node_links = [],
+        link = g_svg.selectAll("path.link"),
+        link_nodes = g_svg.selectAll("circle.link");
+    let initialPositionX = d3.scaleLinear().domain([0, width]).range([0, g_width]),
+        initialPositionY = d3.scaleLinear().domain([0, height]).range([0, g_height]),
+        radiusSize = d3.scaleLinear().domain([0, n_agents]).range([15, 30]);
+
+    let color = d3.scaleOrdinal(['red','blue']),
+        strokeWidth = d3.scaleLinear().domain([1, n_agents]).range([1, 5])
+    function agents_in_area_max_length(agents_in_area){
+        return Math.max(...agents_in_area_length_array(agents_in_area));
+    }
+
+    function agents_in_area_sum_length(agents_in_area){
+        return Math.sum(...agents_in_area_length_array(agents_in_area));
+    }
+
+    function agents_in_area_length(agent_in_area){
+        return agent_in_area.reduce((acc, obj) => {
+            if (obj.in === true)
+                acc += 1;
+            return acc
+        }, 0)
+    }
+
+    function agents_in_area_length_array(agents_in_area){
+        return [agents_in_area_length(agents_in_area[0]), agents_in_area_length(agents_in_area[1])];
+    }
+
+    function update_nodes() {
+        //create new selected rectangle
+        svg.selectAll("rect.node").data(node_data).enter().append("rect").attr("class", "node")
+        .attrs({
+                rx      : 4,
+                ry      : 4,
+                x       : obj => obj.x1 * cell_size + offset_x,
+                y       : obj => obj.y1 * cell_size + offset_y,
+                width   : obj => (obj.x2 - obj.x1) * cell_size,
+                height  : obj => (obj.y2 - obj.y1) * cell_size,
+                opacity : 0.15})
+
+        // create new circle
+        /*node = g_svg.selectAll("circle.node").data(node_data).enter().append("circle").attr("class", "node")
+            .attrs({
+                    r       : obj => radiusSize(obj.agents_in_area.length),
+                    cx      : obj => obj.x,
+                    cy      : obj => obj.y,
+                    opacity : 0.5})
+            .merge(node)*/
+        node.remove();
+        node = g_svg.selectAll("g.pie").data(node_data).enter().append("g").attr("class", "pie")
+            .each(function (obj) {
+                let pie = d3.pie();
+                let arc = d3.arc().innerRadius(0).outerRadius(radiusSize(agents_in_area_max_length(obj.agents_in_area)));
+                d3.select(this).selectAll("path.pie").data(pie(agents_in_area_length_array(obj.agents_in_area)))
+                    .enter().append("path").attr("class", "pie")
+                    .attr("fill", function(d, i) {
+                        return color(i);
+                    })
+                    .attr("d", arc);
+            });
+
+        // reset initial position
+        node_data.forEach(obj => {
+            obj.x = obj.init_x;
+            obj.y = obj.init_y;
+        })
+    }
+
+    function update_links() {
+        // return list of entry and exit points for each area for one agent
+        function foo(agent, key){
+            return node_data.reduce((memo, obj, index) => {
+                let in_area = obj.agents_in_area[key][agent];
+                if (in_area.in)
+                    memo.push({index: index, in: in_area.in, entry: in_area.entry, exit: in_area.exit});
+                return memo;
+            }, []);
+        }
+        // return list of consecutive area the train passes
+        function bar(area_per_agent){
+            let entry = area_per_agent.reduce((memo, obj) => memo.concat(obj.entry), []).sort((a, b) => a - b),
+                entry_area_map = area_per_agent.reduce((memo, obj) => {
+                    for (let i of obj.entry)
+                        memo[i] = obj.index;
+                    return memo;
+                }, {});
+            return entry.map(value => entry_area_map[value]);
+        }
+        // adds_links
+        function foobar(area_list, key){
+            for (let i = 0; i < area_list.length - 1; i++){
+                let found = node_links.find(obj => obj.source === area_list[i] && obj.target === area_list[i+1])
+                if (found === undefined){
+                    //console.log(area_list, key)
+                    node_links.push({source: area_list[i], target: area_list[i+1], weight: [0, 0]});
+                    node_links[node_links.length - 1].weight[key] = 1;
+                    //console.log(node_links[node_links.length -1])
+                }
+                else
+                    found.weight[key] += 1;
+            }
+        }
+
+        node_links = []
+        for (let i = 0; i < n_agents; i++){
+            foobar(bar(foo(i, 0)), 0);
+            foobar(bar(foo(i, 1)), 1);
+        }
+
+        link.remove();
+        link = g_svg.selectAll("path.link")
+            .data(node_links)
+            .enter().append("path")
+            .attrs({"fill": "none", "stroke-width": obj => strokeWidth(Math.max(...obj.weight)), "stroke": "black", "marker-end": "url(#head)", "class": "link"});
+
+        // create node on the link
+        link_nodes.remove();
+        link_nodes = g_svg.selectAll("g.linkpie").data(node_links).enter().append("g").attr("class", "linkpie")
+            .each(function (obj) {
+                let pie = d3.pie();
+                let arc = d3.arc().innerRadius(0).outerRadius(10);
+                d3.select(this).selectAll("path.pie").data(pie(obj.weight)).enter().append("path").attr("class", "pie").attr("fill", function(d, i) {
+                    return color(i);
+                })
+                    .attr("d", arc);
+            });
+    }
+
+    function isInArea(pos, x1, y1, x2, y2){
+        return pos[0] >= x1 && pos[0] < x2 && pos[1] >= y1 && pos[1] < y2
+    }
+
+    function agentInArea2(episode_per_agent, x1, y1, x2, y2) {
+        let agents_in_area = []
+        for (let agent in episode_per_agent){
+            let agent_result = {id: agent, entry: [], exit: [], in: false}
+            let in_area = false;
+            for (let i = 0; i < episode_per_agent[agent].length; i++){
+                let foo = isInArea(episode_per_agent[agent][i], x1, y1, x2, y2);
+                if (!in_area && foo){
+                    agent_result.entry.push(i);
+                    agent_result.in = true;
+                } else if (in_area && !foo){
+                    agent_result.exit.push(i);
+                }
+                in_area = foo;
+            }
+            agents_in_area.push(agent_result);
+        }
+        return agents_in_area;
+    }
+    function agentInArea(episode_per_agent, x1, y1, x2, y2) {
+        let agents_in_area = [];
+        for (let agent in episode_per_agent){
+            let entry_timestamp = episode_per_agent[agent].findIndex(pos => isInArea(pos, x1, y1, x2, y2))
+            if (entry_timestamp !== -1){
+                agents_in_area.push({id: agent, timestep: entry_timestamp});
+            }
+        }
+        return agents_in_area;
+    }
+
+    let simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().distance(d => 150))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(g_width / 2, g_height / 2))
+
+    simulation.nodes(node_data).on("tick", ticked);
+    simulation.force("link").links(node_links);
+
+    function ticked() {
+        link.attr("d", function (d) {
+            if (d.target === d.source){
+                return "M" + d.source.x + "," + d.source.y + "A" + 30 + "," + 20 + " -45 1,0 " + (d.target.x + 1) + "," + (d.target.y + 1);
+            } else {
+                var dx = d.target.x - d.source.x,
+                    dy = d.target.y - d.source.y,
+                dr = Math.sqrt(dx * dx + dy * dy);
+                return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+            }
+        });
+        link.attr("d", function(d) {
+            // length of current path
+            var pl = this.getTotalLength(),
+                // radius of circle plus marker head
+                r_target = (radiusSize(agents_in_area_max_length(d.target.agents_in_area))),
+                r_source = (radiusSize(agents_in_area_max_length(d.source.agents_in_area))),
+                // position close to where path intercepts circle
+                m_target = this.getPointAtLength(pl - r_target),
+                m_source = this.getPointAtLength(r_source);
+
+            var dx = m_target.x - m_source.x,
+                dy = m_target.y - m_source.y,
+                dr = Math.sqrt(dx * dx + dy * dy);
+
+            if (d.target === d.source)
+                return "M" + m_source.x + "," + m_source.y + "A" + 30 + "," + 20 + " -45 1,0 " + m_target.x + "," + m_target.y;
+            else
+                return "M" + m_source.x + "," + m_source.y + "A" + dr + "," + dr + " 0 0,1 " + m_target.x + "," + m_target.y;
+          });
+
+        link_nodes.each(function (link_data, index) {
+            let path = link.nodes()[index];
+            let mid_point = path.getPointAtLength(path.getTotalLength() * 0.35)
+            d3.select(this).attr("transform", `translate(${mid_point.x}, ${mid_point.y})`)
+        })
+
+        node.attr("transform", function (d) {
+            return `translate(${d.x}, ${d.y})`;
+        })
+    }
+
+</script>
+</body>
+</html>

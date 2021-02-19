@@ -1,0 +1,34 @@
+/*svg.selectAll("g.row").data(grid).enter().append("g").attr("class", "row")
+        .each(function (data_row, row_index) {
+            d3.select(this)
+                .selectAll("g.row g.cell")
+                .data(data_row).enter()
+                .append("g").attr("class", "cell")
+                .each(function (cell_type, column_index) {
+                    let cell = d3.select(this)
+                        .append("image")
+                        .attr("x", cell_size*column_index)
+                        .attr("y", cell_size*row_index)
+                        .attr("width", cell_size)
+                        .attr("height", cell_size)
+                        .attr("xlink:href", graphData[cell_type]["src"])
+                    if (graphData[cell_type]["rotation"] !== 0)
+                        cell.attr("transform",
+                            `rotate(${graphData[cell_type]["rotation"]},
+                            ${cell_size*column_index+cell_size/2},
+                            ${cell_size*row_index+cell_size/2})`)
+                })
+        })*/
+
+
+.each(function(pos, index){
+    d3.select(this)
+        .append("label")
+        .text("" + pos[0] + pos[1])
+        .insert("input")
+        .attr({
+            type: "radio",
+            class: "radio src",
+            value: pos
+        })
+});
